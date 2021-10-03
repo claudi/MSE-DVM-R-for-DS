@@ -51,16 +51,16 @@ In this case the code is longer and more verbose, and is cumbersome to use with 
 
 ```{r}
 # filter(arr_delay >= 120)
-flights.tib %>% filter(between(arr_delay, -Inf, 120)) %>% select(flight, arr_delay)
+flights.tib %>% filter(between(arr_delay, 120, Inf)) %>% select(flight, arr_delay)
 # filter(arr_delay > 120, dep_delay <= 0)
 flights.tib %>% filter(
   between(arr_delay, 120+1, Inf),
   between(dep_delay, -Inf, 0)
 ) %>% select(flight, arr_delay, dep_delay)
-# filter(dep_delay >= 60, dep_delay - arr_delay < 30)
+# filter(dep_delay >= 60, dep_delay - arr_delay > 30)
 flights.tib %>% filter(
   between(dep_delay, 60, Inf),
-  between(dep_delay - arr_delay, -Inf, 30-1)
+  between(dep_delay - arr_delay, 30+1, Inf)
 ) %>% select(flight, arr_delay, dep_delay)
 ```
 
