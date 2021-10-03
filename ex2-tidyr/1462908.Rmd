@@ -1,0 +1,87 @@
+---
+title: "Tidyverse Exercise"
+author: "Claudi Lleyda Moltó"
+date: "1462908"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+
+library(tidyverse)
+library(nycflights13)
+
+flights.tib <- as_tibble(flights)
+```
+
+ (1) Using the `flights` dataset, find all flights that
+ 
+  - Had an arrival delay of two or more hours
+
+```{r}
+flights.tib %>% filter(arr_delay >= 120) %>% select(flight, arr_delay)
+```
+
+  - Flew to Houston
+
+```{r}
+houston <- c("IAH", "HOU")
+flights.tib %>% filter(dest %in% houston) %>% select(flight, dest)
+```
+
+  - Arrived more than two hours late, but didn't leave late
+
+```{r}
+flights.tib %>% filter(arr_delay > 120, dep_delay <= 0) %>%
+                select(flight, dep_delay, arr_delay)
+```
+   
+  - Were delayed by at least an hour, but made up over $30$ minutes in flight
+
+```{r}
+flights.tib %>% filter(dep_delay >= 60, dep_delay - arr_delay > 30) %>%
+                select(flight, dep_delay, arr_delay)
+```
+
+ 2. Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous challenges?
+
+The function `between(x, left, right)` as a shortcut for `x >= left & x <= right`. The documentation for the function promises it is an efficient implementation that is compatible with `SQL` queries for remote tables, which could be a huge benefit in such contexts.
+
+In this case the code is longer and more verbose, and is cumbersome to use with non-bounded  or non-closed intervals (since it does not allow the use of non-strict inequalities like `x > left`, but we can translate them to `x >= left+1` in the case of `int` values), but there is a chance it will run faster.
+
+```{r}
+# filter(arr_delay >= 120)
+flights.tib %>% filter(between(arr_delay, -Inf, 120)) %>% select(flight, arr_delay)
+# filter(arr_delay > 120, dep_delay <= 0)
+flights.tib %>% filter(
+  between(arr_delay, 120+1, Inf),
+  between(dep_delay, -Inf, 0)
+) %>% select(flight, arr_delay, dep_delay)
+# filter(dep_delay >= 60, dep_delay - arr_delay < 30)
+flights.tib %>% filter(
+  between(dep_delay, 60, Inf),
+  between(dep_delay - arr_delay, -Inf, 30-1)
+) %>% select(flight, arr_delay, dep_delay)
+```
+
+ 3. Sort flights to find the fastest flights.
+
+```{r}
+flights.tib %>% mutate(speed = distance / air_time) %>% arrange(-speed) %>%
+                select(flight, distance, air_time, speed)
+```
+
+ 4. Create a new data frame having variables with the `dep` string.
+ 
+```{r}
+flights.tib %>% select(contains("dep")) %>% names()
+```
+ 
+ 5. Create a new data frame having the hour and minute of departure
+
+```{r}
+flights.tib %>% mutate(
+  dep_hour = as.integer(dep_time %/% 100),
+  dep_minute = as.integer(dep_time %% 100)
+) %>% select(flight, dep_time, dep_hour, dep_minute)
+```
