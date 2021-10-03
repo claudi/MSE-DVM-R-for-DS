@@ -1,0 +1,47 @@
+---
+title: "`ggplot2` Exercise"
+author: "Claudi Lleyda Moltó"
+date: "1462908"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+
+library(tidyverse)
+library(nycflights13)
+
+flights.tib <- as_tibble(flights)
+```
+
+```{r}
+flights.tib %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_dep_hour = sched_dep_time %/% 100,
+    sched_dep_min = sched_dep_time %% 100,
+    sched_dep_time = sched_dep_hour + sched_dep_min / 60
+  ) %>%
+  ggplot(mapping = aes(sched_dep_time)) +
+    ggtitle("Departure times of cancelled vs. non-cancelled flights") +
+    xlab("Scheduled departure time (H)") +
+    ylab("Cancelled status (bool)") +
+    geom_boxplot(mapping = aes(x = sched_dep_time, y = cancelled))
+```
+
+```{r}
+diamonds %>%
+  mutate(cut = as.numeric(cut),
+         color = as.numeric(color),
+         clarity = as.numeric(clarity)) %>%
+  select(price, everything()) %>%
+  cor()
+  
+diamonds %>% ggplot(aes(cut, carat)) + geom_boxplot()
+diamonds %>% ggplot(aes(carat, price)) + geom_line()
+```
+
+```{r}
+flights.tib %>% names()
+#flights.tib %>% inner_join(flightd, by = c(flight))
+```
