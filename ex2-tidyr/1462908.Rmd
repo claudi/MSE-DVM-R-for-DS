@@ -15,7 +15,7 @@ flights.tib <- as_tibble(flights)
 ```
 
  (1) Using the `flights` dataset, find all flights that
- 
+
   - Had an arrival delay of two or more hours
 
 ```{r}
@@ -35,7 +35,7 @@ flights.tib %>% filter(dest %in% houston) %>% select(flight, dest)
 flights.tib %>% filter(arr_delay > 120, dep_delay <= 0) %>%
                 select(flight, dep_delay, arr_delay)
 ```
-   
+
   - Were delayed by at least an hour, but made up over $30$ minutes in flight
 
 ```{r}
@@ -72,11 +72,11 @@ flights.tib %>% mutate(speed = distance / air_time) %>% arrange(-speed) %>%
 ```
 
  4. Create a new data frame having variables with the `dep` string.
- 
+
 ```{r}
 flights.tib %>% select(contains("dep")) %>% names()
 ```
- 
+
  5. Create a new data frame having the hour and minute of departure
 
 ```{r}

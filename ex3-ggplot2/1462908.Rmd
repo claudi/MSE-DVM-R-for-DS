@@ -19,7 +19,7 @@ diamonds.tib <- as_tibble(diamonds)
  1. Use what you’ve learned to improve the visualization of the departure times of cancelled vs. non-cancelled flights.
 
 ```{r}
-flights.tib %>% 
+flights.tib %>%
   mutate(
     cancelled = is.na(dep_time),
     sched_dep_hour = sched_dep_time %/% 100,
@@ -76,7 +76,7 @@ months = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
 flights.tib$month <- months[flights.tib$month]
 flights.tib$month <- factor(flights.tib$month, levels = months)
 
-flights.tib %>% ggplot(aes(fill = carrier,x = month)) + 
+flights.tib %>% ggplot(aes(fill = carrier,x = month)) +
     geom_bar(position = "dodge", stat = "count")
 ```
 
@@ -129,12 +129,12 @@ In this bloxplot graph we can see that, although the expected value of the data 
 
 ```{r}
 genome.tib %>% ggplot(aes(x = Log.R.Ratio))+
-  geom_density() + 
+  geom_density() +
   facet_wrap(~Chr)
 ```
 
 ```{r}
 genome.tib %>% ggplot(aes(x = B.Allele.Freq))+
-  geom_density(color = "red") + 
+  geom_density(color = "red") +
   facet_wrap(~Chr)
 ```
