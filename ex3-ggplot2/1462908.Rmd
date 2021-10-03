@@ -5,14 +5,18 @@ date: "1462908"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 library(tidyverse)
+library(plyr)
 library(nycflights13)
 
 flights.tib <- as_tibble(flights)
+diamonds.tib <- as_tibble(diamonds)
 ```
+
+ 1. Use what you’ve learned to improve the visualization of the departure times of cancelled vs. non-cancelled flights.
 
 ```{r}
 flights.tib %>% 
@@ -29,19 +33,108 @@ flights.tib %>%
     geom_boxplot(mapping = aes(x = sched_dep_time, y = cancelled))
 ```
 
+
+ 2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+
 ```{r}
-diamonds %>%
+diamonds.tib %>%
   mutate(cut = as.numeric(cut),
          color = as.numeric(color),
          clarity = as.numeric(clarity)) %>%
   select(price, everything()) %>%
   cor()
-  
-diamonds %>% ggplot(aes(cut, carat)) + geom_boxplot()
-diamonds %>% ggplot(aes(carat, price)) + geom_line()
+```
+
+Analyzing the correlations matrix we can see that the most significant variable to predict the prize of a diamond would be it's carat.
+
+By analyzing the following graph we can see that the most expensive diamonds tend to be of a lower cut.
+
+```{r}
+diamonds.tib %>% ggplot(mapping = aes(x = price)) +
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+Next we compare the carat of each diamond according to it's cut.
+
+```{r}
+mu <- diamonds.tib %>% ddply("cut", summarise, grp.mean = mean(carat))
+
+diamonds.tib %>% ggplot(aes(x = carat, color = cut)) +
+  geom_density() +
+  geom_vline(data=mu, aes(xintercept = grp.mean, color = cut), linetype = "dashed")
+```
+
+Through this graph we can see that higher quality diamonds tend to be smaller, or of a lower carat, as indicated by the vertical dashed lines, corresponding to the mean.
+
+This is the reason why we see lower carat diamonds being, on average, more expensive than higher carat diamonds, because high quality diamonds are usually smaller.
+
+ 3. Visualize the number of flights of each airline by month.
+
+```{r}
+months = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+           "Oct", "Nov", "Dec")
+flights.tib$month <- months[flights.tib$month]
+flights.tib$month <- factor(flights.tib$month, levels = months)
+
+flights.tib %>% ggplot(aes(fill = carrier,x = month)) + 
+    geom_bar(position = "dodge", stat = "count")
+```
+
+ 4. Instead of summarizing the conditional distribution with a boxplot, you could use a frequency polygon. What do you need to consider when using `cut_width()` vs. `cut_number()`? How does that impact a visualization of the $2d$ distribution of carat and price?
+
+```{r}
+diamonds.tib %>% ggplot(mapping = aes(x = price)) +
+  geom_freqpoly(mapping = aes(colour = cut_number(carat, n=10)), binwidth = 500)
+
+diamonds.tib %>% ggplot(mapping = aes(x = price)) +
+  geom_freqpoly(mapping = aes(
+    colour = cut_width(carat, width = 0.5, center = 0.25)
+  ), binwidth = 500)
+```
+
+The visualization of these graphs we could conclude that, in this case, the `cut_numbers()` option is better, since it let's us see the behavior of our dataset more clearly.
+
+```{r, include = FALSE}
+genome.tib <- na.omit(as_tibble(read_delim("https://raw.githubusercontent.com/isglobal-brge/Master_Modelling/main/data/genome.txt", delim="\t")))
+
+genome.tib$Chr <- factor(genome.tib$Chr, levels = c(1:22, "X", "Y", "XY"))
 ```
 
 ```{r}
-flights.tib %>% names()
-#flights.tib %>% inner_join(flightd, by = c(flight))
+#6.1
+genome.tib %>% ddply("Chr", summarise,
+                     Log.R.Ratio.mean = mean(Log.R.Ratio),
+                     Log.R.Ratio.sd = sd(Log.R.Ratio))
+
+genome.tib %>% ggplot(aes(x = Chr, y = Log.R.Ratio) ) +
+  geom_boxplot(alpha = 0.3, outlier.colour = "blue") +
+  geom_point(stat = "summary", fun = mean,
+             shape = 16, size = 1.5, color = "red")
+```
+
+Seeing this boxplot we conclude that the expected value of this variable in our dataset is very representative of the data for most values. The exception to this is, to some extent, the `Y` chromosome.
+
+```{r}
+genome.tib %>% ddply("Chr", summarise,
+                     B.Allele.Freq.mean = mean(B.Allele.Freq),
+                     B.Allele.Freq.sd = sd(B.Allele.Freq))
+
+genome.tib %>% ggplot(aes(x = Chr, y = B.Allele.Freq) ) +
+  geom_boxplot(alpha = 0.3, outlier.colour = "blue") +
+  geom_point(stat = "summary", fun = mean,
+             shape = 16, size = 1.5, color = "red")
+```
+
+In this bloxplot graph we can see that, although the expected value of the data is around $0.5$ in every case, the values are usually either $0$ or $1$, giving us a very large standard deviation. This makes the expected value calculation by itself unreliable when analyzing this variable.
+
+```{r}
+genome.tib %>% ggplot(aes(x = Log.R.Ratio))+
+  geom_density() + 
+  facet_wrap(~Chr)
+```
+
+```{r}
+genome.tib %>% ggplot(aes(x = B.Allele.Freq))+
+  geom_density(color = "red") + 
+  facet_wrap(~Chr)
 ```
